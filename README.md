@@ -1,57 +1,80 @@
 # 🐷 打工人小账本 (Worker Ledger & Freedom Dashboard)
 
 > **把钱和时间都算明白** —— 专为打工人设计的真实时薪核算、工时换算记账与自由基金规划工作台。  
-> 视觉采用精致可爱的奶油薄荷手账风，**同时支持「本地 SQLite 极简服务」与「腾讯 WorkBuddy 资料库空间」双引擎**，实现多端设备在线双向实时同步。
+> 视觉采用精致可爱的奶油薄荷手账风，**同时支持「ORA-SQLLite (Rust 原生嵌入式)」、「本地 SQLite 极简服务」与「腾讯 WorkBuddy 资料库」三大引擎**，实现多端设备在线双向实时同步。
 
 ---
 
 ## 📸 运行效果截图
 
-| 桌面端（悬浮手账侧栏 + 驾驶舱） | 移动端（底部便携 Tab + 触控手账） |
-| :--- | :--- |
-| ![桌面端截图](assets/screenshot-dashboard.png) | ![移动端截图](assets/screenshot-mobile.png) |
+| ORA-SQLLite (Rust 实时同步) | 桌面端（悬浮手账侧栏 + 驾驶舱） | 移动端（底部便携 Tab + 触控手账） |
+| :--- | :--- | :--- |
+| ![ORA-SQLLite截图](assets/screenshot-ora-dashboard.png) | ![桌面端截图](assets/screenshot-dashboard.png) | ![移动端截图](assets/screenshot-mobile.png) |
 
 ---
 
-## 🌟 双引擎架构支持
+## 🌟 三大引擎架构自由切换
 
-本项目前端页面（`index.html`）具备**智能环境嗅探**能力，一份代码无缝兼顾以下三种运行模式：
+本项目前端页面（`index.html`）具备**智能环境嗅探**能力，一份前端代码完全兼容以下三种存储引擎：
 
 ```
                               ┌──────────────────────────────────────────────┐
                               │           打工人小账本 (index.html)            │
                               │        奶油薄荷手账风 + 全套内联矢量SVG        │
-                              └──────┬──────────────────┬────────────────────┘
-                                     │                  │
-                ┌────────────────────▼────┐        ┌────▼────────────────────┐
-                │   模式一：本地 SQLite 服务 │        │   模式二：WorkBuddy 资料库   │
-                │   (Python / Node.js 0依赖) │        │   (腾讯云平台在线托管发布)   │
-                └────────────┬────────────┘        └───────────┬─────────────┘
-                             │                                 │
-                   ┌─────────▼─────────┐             ┌─────────▼─────────┐
-                   │ 本地文件: ledger.db│             │ 云端空间: 3张数据表 │
-                   │ 100% 私有，局域网多端│             │ 公网免登录短链发布 │
-                   └───────────────────┘             └───────────────────┘
+                              └──────┬──────────────┬──────────────┬─────────┘
+                                     │              │              │
+                ┌────────────────────▼────┐  ┌──────▼────────────┐ ┌▼────────────────────────┐
+                │ 引擎一：ORA-SQLLite     │  │ 引擎二：本地 SQLite │ │ 引擎三：WorkBuddy 资料库│
+                │ 纯 Rust Oracle 兼容子集  │  │ Python / Node.js   │ │ 腾讯云平台在线托管发布   │
+                └────────────┬────────────┘  └──────┬────────────┘ └───────────┬─────────────┘
+                             │                      │                          │
+                   ┌─────────▼─────────┐  ┌─────────▼─────────┐      ┌─────────▼─────────┐
+                   │ 本地文件: ledger.ora│  │ 本地文件: ledger.db│      │ 云端空间: 3张数据表 │
+                   │ 单文件+WAL, NUMBER  │  │ 0依赖, 局域网多端同步│      │ 公网免登录短链发布 │
+                   └───────────────────┘  └───────────────────┘      └───────────────────┘
 ```
 
-1. **引擎 A：本地 SQLite 极简服务模式（推荐，数据完全私有）**：
+1. **引擎一：ORA-SQLLite 纯 Rust 嵌入式引擎（已完整实装落地）**：
+   * 基于项目作者自研的 **[ORA-SQLLite](https://github.com/liu2kaibin/ORA-SQLLite)**（纯 Rust，单文件+WAL，Oracle 兼容 CRUD 子集）。
+   * 数据金额与工时采用 `NUMBER(12,2)` 严格精度量化，分类与备注采用 `VARCHAR2(32)` 与 `VARCHAR2(500)`。
+   * 单个二进制可执行程序即可直接拉起全功能服务，毫秒级响应。
+2. **引擎二：本地 SQLite 极简服务模式（0 额外依赖）**：
    * 仅依赖 Python 3 或 Node.js 标准库，**无需 `pip install` 或 `npm install` 任何第三方包**。
-   * 本地自动创建 `ledger.db` 单文件数据库，毫秒级读写 (<1ms)，100% 离线脱机可用。
-   * 同一 Wi-Fi 下，手机输入电脑内网 IP 即可同步记账，手机电脑双向实时互通！
-2. **引擎 B：腾讯 WorkBuddy 资料库云端工作台模式**：
+   * 本地自动创建 `ledger.db` 单文件数据库，同一 Wi-Fi 下手机直接输入内网 IP 即可同步记账。
+3. **引擎三：腾讯 WorkBuddy 资料库云端工作台模式**：
    * 深度适配 WorkBuddy SmartPage 资料库 SDK (`window.__SMART_PAGE__.database`)。
-   * 包含 3 张结构化数据表（支出流水表、月度总结表、个人设置表），支持全生命周期增删改查。
-   * 可直接在平台一键发布为公网短链（`https://workbuddy.link/p/...`）。
-3. **引擎 C：纯静态离线预览模式**：
-   * 在任何现代浏览器双击直接打开 `index.html`，自动激活本地存储容灾适配器，零报错丝滑体验。
+   * 包含 3 张结构化数据表，支持公网免登录短链发布（`https://workbuddy.link/p/...`）。
 
 ---
 
 ## 🚀 极速上手
 
-### 模式一：本地 SQLite 启动（10 秒即用）
+### 选项 A：使用 ORA-SQLLite 启动（Rust 原生嵌入式）
 
-进入项目目录，执行以下任一命令：
+进入 `ora-backend/` 目录运行：
+
+```bash
+cd ora-backend
+cargo run --release
+```
+
+终端将打印：
+```text
+==================================================================
+ [打工人小账本] ORA-SQLLite (Rust 嵌入式数据库) 服务已启动！
+ * 电脑本机访问: http://localhost:8080
+ * 同局域网手机: http://192.168.x.x:8080
+ * ORA-SQLLite 存储文件: .../ledger.ora
+ * 底层引擎: ORA-SQLLite v0.1.0 (纯 Rust, 单文件+WAL, Oracle兼容子集)
+==================================================================
+```
+浏览器打开 `http://localhost:8080`，顶部状态胶囊自动亮起绿灯：**`ORA-SQLLite (Rust Embedded) 实时同步`**！
+
+---
+
+### 选项 B：使用本地 SQLite 启动（Python / Node.js 0 依赖）
+
+在项目根目录运行以下任一命令：
 
 * **使用 Python 启动**：
   ```bash
@@ -64,21 +87,9 @@
   node server.mjs
   ```
 
-终端会输出：
-```text
-================================================================
- [打工人小账本] SQLite 本地持久化与多端同步服务已启动！
- * 电脑本机访问: http://localhost:8080
- * 同局域网手机: http://192.168.1.100:8080
- * SQLite 数据库: .../ledger.db
-================================================================
-```
-* **电脑端**：浏览器打开 `http://localhost:8080`。
-* **手机端**：手机连接同一 Wi-Fi，浏览器打开 `http://192.168.1.100:8080`，即可享受移动端触控手账体验。
-
 ---
 
-### 模式二：WorkBuddy 空间部署
+### 选项 C：WorkBuddy 空间部署
 
 1. **创建 3 张数据表**：参考 [DATABASE_SCHEMAS.md](DATABASE_SCHEMAS.md)，在 WorkBuddy 空间创建「支出流水」、「月度总结」、「个人设置」表。
 2. **导入页面**：上传本项目的 `index.html` 为 WorkBuddy 页面。
@@ -118,35 +129,31 @@
 
 ---
 
-## 🎨 视觉与交互规范
-
-* **奶油薄荷手账风**：精选薄荷绿 (`#16856f`)、奶油纸底 (`#f8f5ed`)、浅粉珊瑚 (`#ffe7e1`) 与阳光暖黄 (`#fff2c7`)。
-* **全套内联 SVG**：小猪存钱罐托硬币插画、各类分类手账矢量小图标，完全内聚无外部 CDN 依赖。
-* **桌面端与移动端双形态**：桌面端悬浮侧边栏手账导航；移动端（宽 ≤ 767px）自动折叠为底部触控 Tab，交互热区均 ≥ 44px。
-* **暗黑模式支持**：支持浅色/深色手账风格一键切换。
-
----
-
 ## 📁 项目文件结构
 
 ```text
 worker-ledger/
+├── ora-backend/               # 【核心新增】ORA-SQLLite 纯 Rust 嵌入式后端
+│   ├── Cargo.toml             # 依赖 github.com/liu2kaibin/ORA-SQLLite
+│   ├── src/main.rs            # 原生 Rust HTTP 服务器与 Oracle 语法 CRUD
+│   └── README.md              # ORA-SQLLite 专属说明文档
 ├── app.py                     # Python 3 SQLite 极简本地服务 (0第三方依赖)
 ├── server.mjs                 # Node.js 24 SQLite 原生本地服务 (0 npm依赖)
-├── index.html                 # 打工人小账本完整单文件前端应用 (智能双引擎适配)
+├── index.html                 # 打工人小账本完整单文件前端应用 (自适应三大引擎)
 ├── DATABASE_SCHEMAS.md        # WorkBuddy 与 SQLite 数据表结构全字段规范
 ├── DEPLOYMENT_GUIDE.md        # WorkBuddy 资料库空间建表、绑定与发布详细指南
-├── .gitignore                 # 忽略本地生成的 *.db 数据库文件与缓存
+├── .gitignore                 # 忽略本地生成的 *.db / *.ora / target 缓存
 ├── README.md                  # 项目综合说明文档
 └── assets/                    # 界面实测高清截图
-    ├── screenshot-dashboard.png
-    ├── screenshot-mobile.png
-    └── screenshot-sqlite-dashboard.png
+    ├── screenshot-ora-dashboard.png    # ORA-SQLLite 实机运行截图
+    ├── screenshot-dashboard.png        # 桌面端手账截图
+    ├── screenshot-mobile.png           # 移动端手账截图
+    └── screenshot-sqlite-dashboard.png # SQLite 实机运行截图
 ```
 
 ---
 
 ## 🔒 隐私与许可
 
-* 采用 SQLite 模式运行时，数据 100% 保存在您本机的 `ledger.db`，不上传任何第三方服务器。
+* 采用 ORA-SQLLite 或 SQLite 模式运行时，数据 100% 保存在您本机的 `ledger.ora` / `ledger.db`，绝不上报任何外部服务器。
 * 采用 WorkBuddy 模式运行时，数据仅在您授权的 WorkBuddy 空间内流转。

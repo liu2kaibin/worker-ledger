@@ -1786,13 +1786,14 @@ function sanitizeImport(payload) {
       if (status === 'synced') {
         lastSyncedAt = new Date();
         const timeStr = lastSyncedAt.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
+        const engineName = sqliteInfo?.engine || '本地数据库';
         const defaultMsg = isSqliteBackend 
-          ? ('本地 SQLite 实时同步 (' + timeStr + ')') 
+          ? (engineName + ' 实时同步 (' + timeStr + ')') 
           : ('已与资料库在线同步 (' + timeStr + ')');
         text.textContent = message || defaultMsg;
         retryBtn.hidden = true;
         if (sidebarDetail) {
-          sidebarDetail.textContent = isSqliteBackend ? '本地 SQLite 数据库就绪 (ledger.db)' : '已与 3 张数据表实时保持一致';
+          sidebarDetail.textContent = isSqliteBackend ? (sqliteInfo?.engine || '本地数据库已就绪') : '已与 3 张数据表实时保持一致';
         }
         if (descInModal) descInModal.textContent = '在线正常 (' + timeStr + ' 已校验)';
       } else if (status === 'syncing') {

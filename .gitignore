@@ -3,6 +3,14 @@
 *.sqlite
 *.sqlite3
 ledger.db
+*.ora
+*.ora-wal
+ledger.ora
+ledger.ora-wal
+
+# Rust
+target/
+Cargo.lock
 
 # Python
 __pycache__/

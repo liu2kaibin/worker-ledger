@@ -1,0 +1,10 @@
+[package]
+name = "worker_ledger_ora"
+version = "0.1.0"
+edition = "2024"
+description = "打工人小账本 ORA-SQLLite 纯 Rust 嵌入式后端服务"
+
+[dependencies]
+ora_sqllite = { git = "https://github.com/liu2kaibin/ORA-SQLLite.git", tag = "v0.1.0" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
